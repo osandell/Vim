@@ -21,6 +21,7 @@ export enum ErrorCode {
   InvalidRegisterName = 354,
   SearchHitTop = 384,
   SearchHitBottom = 385,
+
   CannotCloseLastWindow = 444,
   ArgumentRequired = 471,
   InvalidArgument = 474,
@@ -32,6 +33,7 @@ export enum ErrorCode {
   UnknownOption = 518,
   NumberRequiredAfterEqual = 521,
   AtStartOfChangeList = 662,
+
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
   NoPreviouslyUsedRegister = 748,

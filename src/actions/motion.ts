@@ -831,182 +831,182 @@ class MoveToColumn extends BaseMovement {
   }
 }
 
-/**
- * Returns the Postion of the next instance of `char` on the line
- * @param char character to look for
- * @param count number of times to look
- * @param direction direction to look in
- */
-function findHelper(
-  vimState: VimState,
-  start: Position,
-  char: string,
-  count: number,
-  direction: 'forward' | 'backward'
-): Position | undefined {
-  const line = vimState.document.lineAt(start);
+// /**
+//  * Returns the Postion of the next instance of `char` on the line
+//  * @param char character to look for
+//  * @param count number of times to look
+//  * @param direction direction to look in
+//  */
+// function findHelper(
+//   vimState: VimState,
+//   start: Position,
+//   char: string,
+//   count: number,
+//   direction: 'forward' | 'backward'
+// ): Position | undefined {
+//   const line = vimState.document.lineAt(start);
 
-  let index = start.character;
-  while (count > 0 && index >= 0) {
-    if (direction === 'forward') {
-      index = line.text.indexOf(char, index + 1);
-    } else {
-      index = line.text.lastIndexOf(char, index - 1);
-    }
-    count--;
-  }
+//   let index = start.character;
+//   while (count > 0 && index >= 0) {
+//     if (direction === 'forward') {
+//       index = line.text.indexOf(char, index + 1);
+//     } else {
+//       index = line.text.lastIndexOf(char, index - 1);
+//     }
+//     count--;
+//   }
 
-  if (index >= 0) {
-    return new Position(start.line, index);
-  }
+//   if (index >= 0) {
+//     return new Position(start.line, index);
+//   }
 
-  return undefined;
-}
+//   return undefined;
+// }
 
-@RegisterAction
-class MoveFindForward extends BaseMovement {
-  keys = ['f', '<character>'];
+// @RegisterAction
+// class MoveFindForward extends BaseMovement {
+//   keys = ['f', '<character>'];
 
-  public override async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    if (configuration.sneakReplacesF) {
-      const pos = await new SneakForward(
-        this.keysPressed.concat('\n'),
-        this.isRepeat
-      ).execActionWithCount(position, vimState, count);
-      if (vimState.recordedState.operator && !isIMovement(pos)) {
-        return pos.getRight();
-      }
+//   public override async execActionWithCount(
+//     position: Position,
+//     vimState: VimState,
+//     count: number
+//   ): Promise<Position | IMovement> {
+//     if (configuration.sneakReplacesF) {
+//       const pos = await new SneakForward(
+//         this.keysPressed.concat('\n'),
+//         this.isRepeat
+//       ).execActionWithCount(position, vimState, count);
+//       if (vimState.recordedState.operator && !isIMovement(pos)) {
+//         return pos.getRight();
+//       }
 
-      return pos;
-    }
+//       return pos;
+//     }
 
-    count ||= 1;
-    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
-    let result = findHelper(vimState, position, toFind, count, 'forward');
+//     count ||= 1;
+//     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
+//     let result = findHelper(vimState, position, toFind, count, 'forward');
 
-    vimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
-    vimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+//     vimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+//     vimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
 
-    if (!result) {
-      return failedMovement(vimState);
-    }
+//     if (!result) {
+//       return failedMovement(vimState);
+//     }
 
-    if (vimState.recordedState.operator) {
-      result = result.getRight();
-    }
+//     if (vimState.recordedState.operator) {
+//       result = result.getRight();
+//     }
 
-    return result;
-  }
-}
+//     return result;
+//   }
+// }
 
-@RegisterAction
-class MoveFindBackward extends BaseMovement {
-  keys = ['F', '<character>'];
+// @RegisterAction
+// class MoveFindBackward extends BaseMovement {
+//   keys = ['F', '<character>'];
 
-  public override async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    if (configuration.sneakReplacesF) {
-      return new SneakBackward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
-        position,
-        vimState,
-        count
-      );
-    }
+//   public override async execActionWithCount(
+//     position: Position,
+//     vimState: VimState,
+//     count: number
+//   ): Promise<Position | IMovement> {
+//     if (configuration.sneakReplacesF) {
+//       return new SneakBackward(this.keysPressed.concat('\n'), this.isRepeat).execActionWithCount(
+//         position,
+//         vimState,
+//         count
+//       );
+//     }
 
-    count ||= 1;
-    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
-    const result = findHelper(vimState, position, toFind, count, 'backward');
+//     count ||= 1;
+//     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
+//     const result = findHelper(vimState, position, toFind, count, 'backward');
 
-    vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
-    vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+//     vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+//     vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
 
-    if (!result) {
-      return failedMovement(vimState);
-    }
+//     if (!result) {
+//       return failedMovement(vimState);
+//     }
 
-    return result;
-  }
-}
+//     return result;
+//   }
+// }
 
-function tilHelper(
-  vimState: VimState,
-  start: Position,
-  char: string,
-  count: number,
-  direction: 'forward' | 'backward'
-) {
-  const result = findHelper(vimState, start, char, count, direction);
-  return direction === 'forward' ? result?.getLeft() : result?.getRight();
-}
+// function tilHelper(
+//   vimState: VimState,
+//   start: Position,
+//   char: string,
+//   count: number,
+//   direction: 'forward' | 'backward'
+// ) {
+//   const result = findHelper(vimState, start, char, count, direction);
+//   return direction === 'forward' ? result?.getLeft() : result?.getRight();
+// }
 
-@RegisterAction
-class MoveTilForward extends BaseMovement {
-  keys = ['t', '<character>'];
+// @RegisterAction
+// class MoveTilForward extends BaseMovement {
+//   keys = ['t', '<character>'];
 
-  public override async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    count ||= 1;
-    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
-    let result = tilHelper(vimState, position, toFind, count, 'forward');
+//   public override async execActionWithCount(
+//     position: Position,
+//     vimState: VimState,
+//     count: number
+//   ): Promise<Position | IMovement> {
+//     count ||= 1;
+//     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
+//     let result = tilHelper(vimState, position, toFind, count, 'forward');
 
-    // For t<character> vim executes ; as 2; and , as 2,
-    if (result && this.isRepeat && position.isEqual(result) && count === 1) {
-      result = tilHelper(vimState, position, toFind, 2, 'forward');
-    }
+//     // For t<character> vim executes ; as 2; and , as 2,
+//     if (result && this.isRepeat && position.isEqual(result) && count === 1) {
+//       result = tilHelper(vimState, position, toFind, 2, 'forward');
+//     }
 
-    vimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
-    vimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+//     vimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+//     vimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
 
-    if (!result) {
-      return failedMovement(vimState);
-    }
+//     if (!result) {
+//       return failedMovement(vimState);
+//     }
 
-    if (vimState.recordedState.operator) {
-      result = result.getRight();
-    }
+//     if (vimState.recordedState.operator) {
+//       result = result.getRight();
+//     }
 
-    return result;
-  }
-}
+//     return result;
+//   }
+// }
 
-@RegisterAction
-class MoveTilBackward extends BaseMovement {
-  keys = ['T', '<character>'];
+// @RegisterAction
+// class MoveTilBackward extends BaseMovement {
+//   keys = ['T', '<character>'];
 
-  public override async execActionWithCount(
-    position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    count ||= 1;
-    const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
-    let result = tilHelper(vimState, position, toFind, count, 'backward');
+//   public override async execActionWithCount(
+//     position: Position,
+//     vimState: VimState,
+//     count: number
+//   ): Promise<Position | IMovement> {
+//     count ||= 1;
+//     const toFind = Notation.ToControlCharacter(this.keysPressed[1]);
+//     let result = tilHelper(vimState, position, toFind, count, 'backward');
 
-    // For T<character> vim executes ; as 2; and , as 2,
-    if (result && this.isRepeat && position.isEqual(result) && count === 1) {
-      result = tilHelper(vimState, position, toFind, 2, 'backward');
-    }
+//     // For T<character> vim executes ; as 2; and , as 2,
+//     if (result && this.isRepeat && position.isEqual(result) && count === 1) {
+//       result = tilHelper(vimState, position, toFind, 2, 'backward');
+//     }
 
-    vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
-    vimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+//     vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+//     vimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
 
-    if (!result) {
-      return failedMovement(vimState);
-    }
+//     if (!result) {
+//       return failedMovement(vimState);
+//     }
 
-    return result;
-  }
-}
+//     return result;
+//   }
+// }
 
 @RegisterAction
 class MoveRepeat extends BaseMovement {
@@ -1019,6 +1019,11 @@ class MoveRepeat extends BaseMovement {
   ): Promise<Position | IMovement> {
     const movement = vimState.lastSemicolonRepeatableMovement;
     if (movement) {
+      console.log(
+        '\x1b[8m\x1b[40m\x1b[0m\x1b[7m%c    ret mov    \x1b[8m\x1b[40m\x1b[0m\n',
+        'color: white; background: black; font-weight: bold'
+      );
+
       return movement.execActionWithCount(position, vimState, count);
     }
     return position;
